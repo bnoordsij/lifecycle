@@ -16,7 +16,7 @@ const circleCanvas = document.querySelector('#circleScene');
 const springPanel = springCanvas.parentElement;
 const circlePanel = circleCanvas.parentElement;
 const springCamera = new THREE.OrthographicCamera(-3.2, 3.2, 2, -2, 0.1, 50);
-springCamera.position.set(0, 0, 8);
+springCamera.position.set(8 * Math.sin(Math.PI / 9), 0, 8 * Math.cos(Math.PI / 9));
 springCamera.lookAt(0, 0, 0);
 const circleCamera = new THREE.OrthographicCamera(-1.9, 1.9, 1.9, -1.9, 0.1, 50);
 circleCamera.position.set(0, 0, 8);
@@ -134,6 +134,33 @@ for (const end of [springPoints[0], springPoints[springPoints.length - 1]]) {
 }
 const springMarker = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 16), material('#ffffff', 0.2));
 springModel.add(springMarker);
+const tanPanelPositions = new Float32Array(12);
+const tanPanelGeometry = new THREE.BufferGeometry();
+tanPanelGeometry.setAttribute('position', new THREE.BufferAttribute(tanPanelPositions, 3).setUsage(THREE.DynamicDrawUsage));
+tanPanelGeometry.setIndex([0, 1, 2, 0, 2, 3]);
+tanPanelGeometry.setDrawRange(0, 6);
+const tanPanelFill = new THREE.Mesh(
+  tanPanelGeometry,
+  new THREE.MeshBasicMaterial({ color: '#f083a5', transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthTest: false, depthWrite: false })
+);
+tanPanelFill.frustumCulled = false;
+tanPanelFill.renderOrder = 10;
+tanPanelFill.visible = false;
+springModel.add(tanPanelFill);
+const tanPanelOutlinePositions = new Float32Array(24);
+const tanPanelOutlineDistances = new Float32Array(8);
+const tanPanelOutlineGeometry = new THREE.BufferGeometry();
+tanPanelOutlineGeometry.setAttribute('position', new THREE.BufferAttribute(tanPanelOutlinePositions, 3).setUsage(THREE.DynamicDrawUsage));
+tanPanelOutlineGeometry.setAttribute('lineDistance', new THREE.BufferAttribute(tanPanelOutlineDistances, 1).setUsage(THREE.DynamicDrawUsage));
+tanPanelOutlineGeometry.setDrawRange(0, 8);
+const tanPanelOutline = new THREE.LineSegments(
+  tanPanelOutlineGeometry,
+  new THREE.LineDashedMaterial({ color: '#f083a5', dashSize: 0.085, gapSize: 0.055, depthTest: false })
+);
+tanPanelOutline.frustumCulled = false;
+tanPanelOutline.renderOrder = 11;
+tanPanelOutline.visible = false;
+springModel.add(tanPanelOutline);
 
 // The circle stays fixed while the spring has its own independent orbit controls.
 const ringPoints = Array.from({ length: 129 }, (_, index) => {
@@ -216,7 +243,39 @@ function update(nextAngle) {
   const isAsymptote = Math.abs(cosine) < 0.015;
   const tangent = isAsymptote ? null : sine / cosine;
   const circlePoint = new THREE.Vector3(circleRadius * cosine, circleRadius * sine, 0);
-  springMarker.position.copy(springPoint(angle));
+  const springPointNow = springPoint(angle);
+  springMarker.position.copy(springPointNow);
+  if (tangent !== null) {
+    const width = sine;
+    const height = 1 / cosine;
+    const x = springPointNow.x;
+    tanPanelPositions.set([
+      x, 0, 0,
+      x, width, 0,
+      x, width, height,
+      x, 0, height
+    ]);
+    tanPanelGeometry.attributes.position.needsUpdate = true;
+    tanPanelOutlinePositions.set([
+      x, 0, 0, x, width, 0,
+      x, width, 0, x, width, height,
+      x, width, height, x, 0, height,
+      x, 0, height, x, 0, 0
+    ]);
+    tanPanelOutlineDistances.set([
+      0, Math.abs(width),
+      0, Math.abs(height),
+      0, Math.abs(width),
+      0, Math.abs(height)
+    ]);
+    tanPanelOutlineGeometry.attributes.position.needsUpdate = true;
+    tanPanelOutlineGeometry.attributes.lineDistance.needsUpdate = true;
+    tanPanelFill.visible = true;
+    tanPanelOutline.visible = true;
+  } else {
+    tanPanelFill.visible = false;
+    tanPanelOutline.visible = false;
+  }
   circleMarker.position.copy(circlePoint);
   setLine(radiusLine, circleCenter, circlePoint);
   setLine(cosineLine, circleCenter, new THREE.Vector3(circleRadius * cosine, 0, 0));

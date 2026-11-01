@@ -15,19 +15,11 @@
   </head>
   <body>
     <main class="page">
-      <header>
-        <div>
-          <p class="eyebrow">Trigonometry in 3D</p>
-          <h1>One turn, <span>three functions.</span></h1>
-        </div>
-        <p class="intro">Follow one point around a spring and see its angle resolve into sine, cosine and tangent.</p>
-      </header>
 
       <section class="visuals" aria-label="Spring, unit circle, and trigonometric graphs">
         <div class="visual-panel spring-panel">
-          <div class="panel-title">One full turn · side view</div>
           <canvas id="springScene" aria-label="A horizontal one-turn 3D spring shown as a sine wave"></canvas>
-          <div class="panel-hint">Drag to rotate · gold = sin · teal = cos · violet = 1/cos θ</div>
+          <div class="panel-hint">Drag to rotate · pink panel: sin θ × 1/cos θ = tan θ</div>
         </div>
         <div class="visual-panel side-panel">
           <div class="panel-title">Unit circle · θ</div>
@@ -64,14 +56,6 @@
       </div>
       <div class="scale" aria-hidden="true"><span>0°</span><span>90°</span><span>180°</span><span>270°</span><span>360°</span></div>
 
-      <footer>
-        <p>On the unit circle, cos θ is the x-coordinate and sin θ is the y-coordinate.<br />Tangent is their ratio: tan θ = sin θ / cos θ.</p>
-        <div class="key" aria-label="Diagram color key">
-          <span><i class="dot cosine-dot"></i>cosine</span>
-          <span><i class="dot sine-dot"></i>sine</span>
-          <span><i class="dot tangent-dot"></i>tangent</span>
-        </div>
-      </footer>
     </main>
 
     <script type="module" src="./script.js"></script>
